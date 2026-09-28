@@ -31,13 +31,13 @@ Report what happened with no hype. No exclamation points, no "amazing" or
 - Wrong: "Super excited to jump on this!! Can't wait to dig in!"
 - Right: "I'd like to work on this. I'll start by finding where the prompt opens."
 
-### Rule: No em dashes
+### Rule: Promise the investigation only
 
-Use a period or a comma instead. If a sentence needs a dash, split it
-into two sentences.
+When I claim an issue, I say what I'll look at and that a report is
+coming. I never promise a fix, a PR, or a date.
 
-- Wrong: "It fails on the last value — the range overflows."
-- Right: "It fails on the last value. The range overflows."
+- Wrong: "I'll have a fix up by Friday."
+- Right: "I'll check the README against `.env.example` and post a repro report here."
 
 ### Rule: No "do X, not Y" sentences
 
@@ -52,5 +52,5 @@ I'm not doing.
 - Begging or pleading: "please fix this", "please let me have this one",
   "🙏", "I really need this merged".
 - Emojis of any kind.
-- Em dashes.
+- Em dashes. I use a period or a comma, or split the sentence in two.
 - Promises I can't back up, like "I'll have a fix up tomorrow".
