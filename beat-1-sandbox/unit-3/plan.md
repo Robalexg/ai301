@@ -161,3 +161,22 @@ Three small things went differently around the change:
 
 The open question from the plan is still open. Nobody has said which
 `LLM_PROVIDER` value the app expects for OpenRouter.
+
+Added on 2026-10-12, while preparing the PR:
+
+- Checks, second pass. I re-ran the checks through the targets the PR
+  template lists, so `test_evidence.md` shows `make test-unit`,
+  `make test-integration`, `make lint`, and `make typecheck`. I still
+  skipped `make check` and `make format`, because both run `black .`
+  and rewrite files. I ran `black --check .` in their place, and it
+  reported 110 files unchanged.
+- Frontend tests. The plan didn't list them. `docs/CONTRIBUTING.md`
+  names `cd frontend && npm ci && npm test -- --run` as one of the
+  five local checks, so I ran it. 18 tests passed.
+- Integration tests. `make test-integration` collected 0 items and
+  stopped with "no tests ran". The repo has none yet.
+- Type check. `make typecheck` fails the same way `mypy` did, on the
+  numpy stub in my `.venv`. I still have no local type check result.
+
+None of this changed the diff. It is still the one hunk in
+`.env.example`.
