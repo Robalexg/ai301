@@ -79,10 +79,16 @@ through. My `CLAUDE.local.md` for aidj (34 lines, kept out of git with `.git/inf
 records that search history already lives in `search.tsx` and that my machine can't run the full
 app, so future sessions start from those facts instead of rediscovering them.
 
-**Unit 7: [one line on the tool work]**
+**Unit 7: installed the ship-gate, wrote aidj's manifest from its CI file, and passed the gate on my branch (2026-11-08)**
 
-[2-4 sentences: the ship-gate and your gate manifest. What it produced
-on your real branch, what fought you, what changed because of it.]
+My manifest runs aidj's own CI steps (`npm ci`, lint, build, vitest) with Playwright excluded and
+dated, and the hook test gave the two expected stops. The first hand run said `ship-gate: PASS`:
+the manifest checks passed and pr-precheck accepted all nine checks, while noting that "Fixes #286"
+closes an issue my PR only partly covers. The voice guard then caught two lines in my description
+that broke my own rules (an issue recap and a "do X, not Y" sentence) that pr-precheck had only
+noted, so I rewrote them, and the changed description means the gate runs again before the PR opens.
+plan-check also reported my voice guide as missing because it doesn't follow the symlink from unit
+6, so that check was silently skipped.
 
 **Unit 8: [one line on the tool work]**
 
@@ -334,17 +340,35 @@ why. A recorded deviation is honest work; silent drift is not.]
 
 ## Testing Strategy
 
-[What observable checks prove the fix: your reproduction steps re-run
-against the built change (before and after), and the repo's own test
-suite or checks with the outcome shown. "Tests pass" with nothing
-observable named is not a strategy.]
+Three layers, all saved in `test_evidence.md` in my clone:
+
+1. **New unit tests, one per gap.** `src/lib/utils/__tests__/recent-searches.test.ts` has 5 tests:
+   clicked songs, artists and albums are saved newest first (repro step 4); two users on one browser
+   get separate lists (repro step 5); the old shared key is removed and nobody inherits it; a repeat
+   moves to the front and the cap of 10 holds; corrupt stored data is ignored. Before: on upstream
+   `main` the file fails with `Failed to resolve import "../recent-searches"`. After: 5 of 5 pass.
+2. **Repro steps re-run on the branch.** Before, `grep -n "saveRecent(" search.tsx` found one writer
+   (the typed query, line 84) and `handleSongClick` saved nothing. After, the same grep finds
+   recorders for queries (83), song plays (186), artist clicks (353) and album opens (387, 393),
+   and the page reads `context.user` to build the key.
+3. **The repo's own checks** (from its CI file): `npm run lint` 0 errors (and `search.tsx` keeps the
+   same 9 warnings it had before), `npm run build` succeeds, `npx vitest run` 86 files and 1046 tests
+   pass.
+
+What isn't covered: I haven't clicked through the UI in a running app, because it needs PostgreSQL
+and Navidrome and I have no Docker. The UI wiring is checked by build, lint and the grep evidence.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: Claude Code running vitest, eslint and the build in my clone, plus the ship-gate's manifest
+  checks.
+- What it produced: before/after evidence for each gap, the full suite passing (1046 tests), and a
+  lint comparison showing `search.tsx` has the same 9 warnings before and after.
+- Difficulties: the dependency install was blocked for the AI (it runs a third-party repo's install
+  scripts), so I ran `npm ci` myself; I mistyped it twice with a trailing period. `tsc` shows 406
+  errors repo-wide, none in my files, and CI doesn't run it, so I left it out of the manifest.
+- What changed: I added a "fails on main" run of the new test so the evidence shows the test
+  actually depends on the fix.
 
 ---
 
@@ -373,10 +397,12 @@ result. I amended commit 1 once to add the attribution line I'd left off.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: Claude Code with my `CLAUDE.local.md` and the repo's own `CLAUDE.md`, editing on the branch.
+- What it produced: two commits, the helper module with tests and the `search.tsx` wiring, each
+  with a Conventional Commit message.
+- Difficulties: the first commit went in without the attribution line and had to be amended, and a
+  stash to get around the macOS `BACKLOG.md` case collision left an extra stash I had to drop.
+- What changed: I keep `docs/BACKLOG.md` out of every `git add` and stage files by name.
 
 ---
 
