@@ -11,7 +11,7 @@ files and no evidence uploads are part of Assignment 5.
 **Student:** Robert Guajardo
 **GitHub Username:** Robalexg
 **Issue:** https://github.com/lolimmlost/aidj/issues/286
-**Pull Request:** [GitHub PR link, once opened]
+**Pull Request:** https://github.com/lolimmlost/aidj/pull/399
 
 One repository, built across units 5 to 8, telling the whole story of your real
 contribution. Fill it as you work, not at the end — the sections below ask for evidence that
@@ -90,10 +90,15 @@ noted, so I rewrote them, and the changed description means the gate runs again 
 plan-check also reported my voice guide as missing because it doesn't follow the symlink from unit
 6, so that check was silently skipped.
 
-**Unit 8: [one line on the tool work]**
+**Unit 8: installed the PR monitor, wrote a playbook for a repo with no outside contributors, and kept its first draft off the thread (2026-11-08)**
 
-[2-4 sentences: the PR-monitor and your playbook. What it read, what it
-drafted, what you did with the draft.]
+The monitor read PR #399 minutes after it opened (no checks, no reviews, quiet) and drafted a wait
+note: no nudge before my 10-day threshold on 2026-11-19, so I posted nothing. Writing the playbook
+was the hard part: the assignment says to measure five merged outside PRs, but aidj has never merged
+one (all 160 are the owner's or dependabot's), so I set the threshold from my voice guide's "at least
+a week" and the owner's commit rhythm and wrote that reason into the rule. My first full run stopped
+with a REFUSAL because the playbook was still empty, which cost nothing and is how I learned the
+monitor checks all four sections before calling Claude.
 
 ---
 
@@ -319,8 +324,8 @@ route.
    step 4's handler records the song; step 5 shows the page reading the user and the key built from
    the user ID.
 
-[Record deviations here as they happen: what changed mid-build and
-why. A recorded deviation is honest work; silent drift is not.]
+Deviations: none in the code. The only change from this plan is in the PR wording: "Part of #286"
+instead of "Fixes #286", because I built two of the issue's four asks (see Implementation Notes).
 
 **Toolkit**
 
@@ -374,9 +379,6 @@ and Navidrome and I have no Docker. The UI wiring is checked by build, lint and 
 
 ## Implementation Notes
 
-[A running log, added to as you work. Date each entry. What you
-built, decisions you made when you made them, wrong turns included.]
-
 **2026-11-08**
 
 Installed the ship-gate and wrote the manifest from aidj's CI file: `npm ci`, `npm run lint`,
@@ -395,6 +397,14 @@ requires it), song plays and album opens are recorded, and artist clicks are cau
 the play button inside an artist card also records that artist, since it's still a click on that
 result. I amended commit 1 once to add the attribution line I'd left off.
 
+**2026-11-08**
+
+Installed dependencies with `npm ci` myself (blocked for the AI), then ran lint, build and vitest:
+all pass, and `search.tsx` keeps the same 9 lint warnings it had. Opened PR #399 after the owner
+still hadn't answered my scope question, with "Part of #286" and a note that the scope is open.
+Plan deviation: none in the code. The PR wording changed from "Fixes" to "Part of" because I only
+built two of the issue's four asks.
+
 **Toolkit**
 
 - Tool: Claude Code with my `CLAUDE.local.md` and the repo's own `CLAUDE.md`, editing on the branch.
@@ -408,27 +418,38 @@ result. I amended commit 1 once to add the attribution line I'd left off.
 
 ## Pull Request
 
-**PR Link:** [GitHub PR URL when opened]
+**PR Link:** https://github.com/lolimmlost/aidj/pull/399
 
-**PR Description:** [what the PR says; much of the content above
-adapts into it]
+**PR Description:** Title `feat(search): save clicked results and keep recent searches per user`,
+marked "Part of #286". It adds `src/lib/utils/recent-searches.ts` (history keyed by user ID, holding
+queries plus clicked songs, artists and albums, newest first, capped at 10), removes the old shared
+key without copying it into any account, and wires `search.tsx` to record song plays, artist clicks
+and album opens. It says Private Session and the command palette are left for #271 and #284, that
+I asked about the scope on the issue and haven't heard back, and that I didn't run the app in a
+browser. Testing shows the new test failing on `main` and passing on the branch, plus lint, build
+and the full vitest run. It ends with an AI use section in my words. I used "Part of" instead of
+"Fixes" so merging doesn't close the parts I didn't build.
 
 **Maintainer Feedback:**
 
-- [Date]: [feedback received, or "none yet"; silence is a normal
-  state and costs you nothing]
-- [Date]: [how you addressed it]
+- 2026-11-08: none yet. The PR opened at 22:09 local; the monitor's first run drafted a wait note
+  (my threshold is 10 days, so no nudge before 2026-11-19), and I kept it off the thread.
 
-**Status:** [Awaiting review / Iterating / Merged / Closed. The
-status is a fact you record, never a grade: the PR is graded as
-opened.]
+**Status:** Awaiting review
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: the ship-gate, run by hand with `check_gate.py --branch`, then through the hook when Claude
+  Code ran `gh pr create`; the voice guard checked the description on the same command.
+- What it produced: two hand runs ending in `ship-gate: PASS` (manifest checks plus pr-precheck
+  accepting all nine checks), then a hook pass and a voice-guard pass, and PR #399 on
+  lolimmlost/aidj.
+- Difficulties: after the first PASS, the voice guard caught two lines in my description that broke
+  my own rules (an issue recap and a "do X, not Y" sentence), and any edit to the description voids
+  the pass, so the gate had to run again. pr-precheck also flagged that "Fixes #286" would close the
+  issue while I only built part of it.
+- What changed: I rewrote the two lines, switched to "Part of #286", and added a line saying the scope
+  question is still open, then re-ran the gate to PASS before opening.
 
 ---
 
@@ -436,25 +457,42 @@ opened.]
 
 **Technical Skills Gained**
 
-[What you learned technically, named concretely.]
+- Reading a TanStack Start route: `beforeLoad` puts the user in the route context, and
+  `Route.useRouteContext()` reads it in the component, so I didn't need a new auth call.
+- Pulling storage logic out of a component into pure functions that take a storage object, so
+  vitest can test it against jsdom's `localStorage` without rendering the page.
+- Recording clicks on a shared component with `onClickCapture` on a wrapper instead of editing it.
+- Proving a test depends on the fix by running it against upstream `main`.
+- Comparing lint warnings per file before and after, so "0 errors" isn't hiding new warnings.
 
 **Challenges Overcome**
 
-[What was hard and how you solved it; point at the real events, the
-Toolkit blocks above are full of them.]
+- The issue described a page that no longer existed: half the feature had shipped in #98. Reading
+  the code instead of trusting the issue text turned that into a scoped claim and a PR marked
+  "Part of #286".
+- I couldn't run the app (PostgreSQL and Navidrome, no Docker), so the repro and testing rest on
+  pinned source output and unit tests, and both the story and the PR say so.
+- plan-check wanted a posted repro, which the course told me not to post; quoting the repro output
+  in the plan satisfied the skill's own fallback.
+- My own voice rules caught my own drafts twice: a four-paragraph claim under a "one or two
+  sentences" rule, and two lines in the PR description.
 
 **What I'd Do Differently Next Time**
 
-[Reflection on your process.]
+I'd look at a repo's contributor history before choosing it. aidj has never had an outside PR or
+issue, so I'm waiting on someone who has never answered a stranger, and my scout had no check for
+that. I'd also wait for the owner's answer on scope before building, or pick an issue with a
+settled design, and I'd set up a way to run the app first so the repro shows real behavior. Last,
+I'd keep my claim to two sentences, as my own rule says.
 
 ---
 
 ## Resources Used
 
-[What actually helped, not a reading list. List things this story
-already shows you using: the doc you followed to set the environment
-up, the thread that explained the bug, the person who answered you.
-One real entry beats ten plausible ones.]
-
-- [Link to documentation that helped]
-- [Discussion, issue, or post that helped]
+- aidj's CONTRIBUTING.md (checks, Conventional Commit titles, "Discussion first" rule):
+  https://github.com/lolimmlost/aidj/blob/main/CONTRIBUTING.md
+- aidj's CLAUDE.md (stack, route and store layout): https://github.com/lolimmlost/aidj/blob/main/CLAUDE.md
+- PR #98, which added the existing query history and showed me the issue was out of date:
+  https://github.com/lolimmlost/aidj/pull/98
+- Issues #271 (Private Session) and #284 (command palette), which set the PR's scope:
+  https://github.com/lolimmlost/aidj/issues/271 and https://github.com/lolimmlost/aidj/issues/284
