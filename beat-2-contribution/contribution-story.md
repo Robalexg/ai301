@@ -55,10 +55,18 @@ happened; these entries are the toolkit's own timeline.
 All four entries are graded. Keep every heading below, and fill each
 one in the week it belongs to.
 
-**Unit 5: [one line on the tool work]**
+**Unit 5: turned my issue-select skill into issue-scout and wrote its search strategy (2026-11-08)**
 
-[2-4 sentences: what you built (the scout, your strategy), what broke
-or fell short, what changed because of it.]
+I installed the scout over my Unit 1 skill and wrote a search strategy with three
+`gh search issues` queries, one per sentence of my fit profile (everyday-life apps,
+state and data-flow libraries, JS/TS games), ranked by no assignee, updated within 90 days,
+10 comments or fewer, and fewest comments first. Plain keyword queries returned mostly tiny
+personal repos, so I aimed the queries at named projects instead; my first scan then graded
+five candidates and rejected all five, and two of those rejections exposed rubric bugs:
+`repo-in-use` failed lichess, which deploys daily but stopped tagging releases in 2017, and
+tldraw's "pull requests are turned off" could only be caught by stretching my AI-policy check.
+I let `repo-in-use` fall back to recent pushes, added a required `accepts-outside-prs` check,
+removed a leftover classroom claim rule, and dropped tldraw and next.js from the queries.
 
 **Unit 6: [one line on the tool work]**
 
