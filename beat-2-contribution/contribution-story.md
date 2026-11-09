@@ -135,26 +135,40 @@ Claim: https://github.com/lolimmlost/aidj/issues/286#issuecomment-6731680176
 
 **Problem Description**
 
-[In your own words, what is broken or missing?]
+Search keeps a history of typed queries, but two parts of what #286 asks for are missing. Clicking
+a result (a song, artist or album) never saves it, and the history sits under one fixed
+localStorage key, so everyone who signs in on the same browser shares one list.
 
 **Expected Behavior**
 
-[What should happen?]
+The last ~10 queries and clicked results are saved for the signed-in user only, and shown when the
+search field is empty, with a remove button on each and Clear all. (The issue also asks to skip
+saving during a Private Session and to reuse the list in a command palette. Neither feature exists
+yet, #271 and #284, so those parts wait.)
 
 **Current Behavior**
 
-[What actually happens?]
+Only typed queries are saved, 1.2 seconds after typing stops. Playing a song, or opening an artist
+or album from the results, leaves the history unchanged. The key is always `aidj.search.recent`,
+whoever is signed in.
 
 **Affected Components**
 
-[Which parts of the codebase are involved?]
+`src/routes/library/search.tsx`: `RECENT_KEY`, `saveRecent`, the debounced save effect,
+`handleSongClick`, `AlbumResultCard`, the `ArtistCard` list, and the idle "Recent searches" section.
+`ArtistCard` comes from `src/components/library/ArtistsList.tsx`. The signed-in user is already in
+the route context (`beforeLoad` checks `context.user`).
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: Claude Code with my `CLAUDE.local.md`, reading `search.tsx`, the route context and the
+  `Song` type, plus `gh` for the linked issues.
+- What it produced: the two real gaps (clicked results, per-user key), and the facts the fix
+  needs: the user is already in `context.user`, and song stream URLs are stable, so a saved song
+  can be replayed later.
+- Difficulties: the issue text describes a page that no longer exists ("no search history"), so I
+  had to separate what's done from what's missing before I could say what's broken.
+- What changed: I rewrote the problem as the two gaps instead of the issue's wording.
 
 ---
 
@@ -224,29 +238,97 @@ case collision, which shows up as a modified file I leave out of every commit.
 
 **Analysis**
 
-[Your analysis of the root cause: what is causing the issue, traced
-to the files and functions involved.]
+History lives entirely in `src/routes/library/search.tsx`. The only code that adds an entry is the
+debounced effect on `query` (line 84), and it stores plain strings. `handleSongClick` (lines
+184-190), the `ArtistCard` grid (line 326) and `AlbumResultCard` (line 605) navigate or play
+without touching history, so clicked results are never saved. Load and save both use the constant
+`RECENT_KEY = 'aidj.search.recent'` (lines 41, 66, 74), with no user in it, even though the route's
+`beforeLoad` already has the signed-in user in `context.user`.
+
+Repro evidence this rests on (my repro at upstream `b81906e`, in Reproduction Process above):
+
+```
+$ grep -n "saveRecent(" src/routes/library/search.tsx
+84:      saveRecent([term, ...recent.filter((r) => r.toLowerCase() !== term.toLowerCase())].slice(0, MAX_RECENT));
+405:                      onClick={() => saveRecent([])}
+425:                            saveRecent(recent.filter((r) => r !== term));
+431:                              saveRecent(recent.filter((r) => r !== term));
+$ sed -n 184,190p src/routes/library/search.tsx
+  const handleSongClick = (songId: string) => {
+    const song = songs.find(s => s.id === songId);
+    if (!song) return;
+    setAIUserActionInProgress(true);
+    playSong(songId, [song]);
+    setTimeout(() => setAIUserActionInProgress(false), 1000);
+  };
+$ grep -c "useSession\|session" src/routes/library/search.tsx
+0
+```
+
+Line 84 is the only writer and stores the typed term; the song click handler never saves; nothing
+on the page reads the user, and line 41 is one fixed key. The per-user gap comes from reading the
+code; I haven't run two accounts.
 
 **Proposed Solution**
 
-[High-level description of your fix approach, and what you are
-deliberately NOT changing.]
+Move the history logic into a small helper module, `src/lib/utils/recent-searches.ts`, that keys
+history by user ID (`aidj.search.recent.<userId>`) and stores typed entries: a query, or a song,
+artist or album the user clicked. Newest first, no duplicates, capped at 10. The old shared key is
+removed the first time the page loads and is not moved into anyone's account, because on a shared
+browser that would hand one person's searches to another. The cost is that current history starts
+over once. `search.tsx` reads the user from the route context, records song plays and
+artist and album clicks, and shows each entry in the existing "Recent searches" row with an icon
+for its kind. Artist clicks are recorded by wrapping each `ArtistCard` on this page in an element
+with `onClickCapture`, so the shared component in `ArtistsList.tsx` doesn't change.
+`AlbumResultCard` gets an optional `onOpen` prop. Clicking a query fills the search box, a song
+plays, and an artist or album opens its page. An album saved without an `artistId` has no page to
+open (today's card links back to search), so clicking it fills the search box with its name.
+
+The scope question in my claim (per-user history plus clicked results, leaving #271 and #284) is
+unanswered so far. I'll build on the branch and hold the PR until the owner replies.
+
+Not changing: Private Session (#271) and the command palette (#284), the 1.2 second typing
+debounce, the layout of the search page, `ArtistsList.tsx`, server-side storage, and any other
+route.
 
 **Implementation Plan**
 
-1. [Modify file X to do Y]
-2. [Add or change Z]
-3. [Update tests]
+1. Add `src/lib/utils/recent-searches.ts`: the entry types, `recentSearchKey(userId)`,
+   `loadRecent(storage, userId)` with the one-time move from the old key, `addRecent(list, entry)`
+   (dedupe, newest first, cap 10), and `saveRecent(storage, userId, list)`.
+2. Add `src/lib/utils/__tests__/recent-searches.test.ts` (vitest), one test per repro gap, each
+   showing the opposite of today's behavior:
+   - Repro step 4 (a song click saves nothing): after `addRecent` with a song, an artist and an
+     album, `loadRecent` returns all three, newest first. Today there is no code path that saves
+     them.
+   - Repro step 5 (one shared key): user A saves "drake", then user B's `loadRecent` returns an
+     empty list and A's still returns "drake". Today both would read the same list.
+   - The old `aidj.search.recent` key is removed and its entries don't appear for any user.
+   - Re-adding an entry moves it to the front, and an 11th entry drops the oldest.
+3. Update `search.tsx`: read `user` with `Route.useRouteContext()`, swap the inline storage code for
+   the helpers, record clicks in `handleSongClick`, the artist grid and `AlbumResultCard`, and render
+   each entry kind in the "Recent searches" row.
+4. Run `npm run lint`, `npm run build` and `npx vitest run`. Then re-run repro steps 3 to 5 on the
+   branch. Expected after: step 3 shows new `addRecent` calls for song, artist and album clicks;
+   step 4's handler records the song; step 5 shows the page reading the user and the key built from
+   the user ID.
 
 [Record deviations here as they happen: what changed mid-build and
 why. A recorded deviation is honest work; silent drift is not.]
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: plan-check, grading `plan.md` and an unposted `plan-comment.md` against the issue.
+- What it produced: a reject first (diagnosis-grounded and targets-cause unclear, test-observable
+  failed), then an accept on all seven checks after one revision.
+- Difficulties: it wanted a posted repro comment, but unit 6 said not to post the repro; the
+  skill's own fallback ("evidence as quoted in the drafts") solved it once I quoted the repro
+  output in the plan. It also reported "no voice-guide.md" when the file is a symlink to my
+  canonical guide, so it never checked the comment's voice.
+- What changed: the plan now quotes the repro, ties each test to a repro step with before and
+  after, drops the old shared key instead of moving it into one account (plan-check caught that
+  the move would leak one person's searches to another), and says how artist and album clicks get
+  recorded without touching the shared `ArtistCard`.
 
 ---
 
