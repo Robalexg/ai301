@@ -1,4 +1,4 @@
-# Contribution: [Issue Title]
+# Contribution: UX: recent searches on search focus (with clear)
 
 Path: `beat-2-contribution/contribution-story.md`
 
@@ -8,10 +8,9 @@ format criteria grade exactly that. Your course repo link is the whole submissio
 files and no evidence uploads are part of Assignment 5.
 
 **Contribution Number:** [1]
-**Student:** [Student name]
-**GitHub Username:** [your GitHub username, exactly as it appears on your profile - no @, no
-profile URL. Your comments upstream are identified by this name.]
-**Issue:** [GitHub issue link]
+**Student:** Robert Guajardo
+**GitHub Username:** Robalexg
+**Issue:** https://github.com/lolimmlost/aidj/issues/286
 **Pull Request:** [GitHub PR link, once opened]
 
 One repository, built across units 5 to 8, telling the whole story of your real
@@ -68,11 +67,17 @@ tldraw's "pull requests are turned off" could only be caught by stretching my AI
 I let `repo-in-use` fall back to recent pushes, added a required `accepts-outside-prs` check,
 removed a leftover classroom claim rule, and dropped tldraw and next.js from the queries.
 
-**Unit 6: [one line on the tool work]**
+**Unit 6: installed the voice guard over one merged voice guide, and wrote a repo memory file for aidj (2026-11-08)**
 
-[2-4 sentences: the voice-guard, the repo-memory file. What broke or
-fell short, and what changed because of it. "Nothing broke" counts when
-it is true - say how you know.]
+I folded my three voice-guide copies into one canonical guide, added Upstream rules for claims,
+questions and pings, and installed the guard as a hook; the wiring test was stopped as expected,
+and my real claim went through it with a logged pass before it posted. Two things fought me: my
+old rule "never promise a date" contradicted the course's ask to say when I'll report back, so I
+narrowed it to "no date for a fix or PR", and repro-check later flagged that my posted claim ran
+four paragraphs against my own new "one or two sentences" claim rule, which the guard had let
+through. My `CLAUDE.local.md` for aidj (34 lines, kept out of git with `.git/info/exclude`)
+records that search history already lives in `search.tsx` and that my machine can't run the full
+app, so future sessions start from those facts instead of rediscovering them.
 
 **Unit 7: [one line on the tool work]**
 
@@ -88,24 +93,41 @@ drafted, what you did with the draft.]
 
 ## Why I Chose This Issue
 
-[1-2 paragraphs in your own words: how you searched, what your scan
-surfaced, what your scout's verdict said, why this issue fits your
-profile, and what you hope to learn. If your scout's verdict on it
-was reject and you chose it anyway, say so here and say why; choosing
-against your own tool silently is what loses points. Close with an
-honest read of the tool itself: where the scout fell short on a real
-wild search and what you changed or would change, or what convinced
-you it held up. **Record the link to your claim comment in this section too.**
-Not claimed yet? Write `claim pending` and today's date where the link goes,
-and add the link the moment your claim lands.]
+My scout's own scan of named React, state-library and game repos graded five issues and rejected
+all five, so this issue came from the Issue Selection site. I filtered it to JavaScript and
+TypeScript with "good first issue", screened the JS/TS repos with gh for open PRs and recent claims
+(only 180 of 364 were actually free), and graded six picks over two rounds. The first three
+(nusmods#4602, nusmods#3069, stump#559) were rejected; the second three (aidj#286,
+UT-Registration-Plus#864, stoatchat/for-web#1610) were accepted, and after this week's scope patch
+the regrade accepted all three again, with aidj rated "moderate". I chose aidj#286 because it is
+the closest match to my profile: React and TypeScript, client-side state and data flow, in an app
+people use every day. I want to learn how to land a feature in someone else's codebase cleanly,
+with tests, in a repo where I have to read the owner's conventions instead of setting my own.
+Stoat ranked above it, but its guide says "Please do not open PRs generated with LLMs", which
+doesn't fit course work that is AI-assisted by design.
+
+Reading the code changed the picture: the issue says no search history exists, but `search.tsx`
+already keeps the last 10 queries with remove and Clear all (from #98, before the issue was
+filed), and two of the asks depend on open issues #271 and #284. So I'd now call it ambitious, not
+moderate, and my claim asks the owner to scope it to per-user history and saved clicked results.
+Honest read of the scout: it checks the thread and policies well, but it trusts the issue text, so
+it never noticed the feature was half built; only reading the code caught that. The repo is also a
+solo project with 2 stars, which my rubric records but can't weigh.
+
+Claim: https://github.com/lolimmlost/aidj/issues/286#issuecomment-6731680176
 
 **Toolkit**
 
-- Tool: issue-scout (your scout: your search strategy, your rubric),
-  and how you used it
-- What it produced: [the scan and its verdict on this issue, described]
-- Difficulties: [where it fell short, or "none met" if none did]
-- What changed: [what you patched or would update, or "nothing"]
+- Tool: issue-scout, my search strategy plus my rubric; I ran one scan, then graded my site picks
+  directly, twice, and regraded after this week's patch.
+- What it produced: a scan that rejected all five candidates, then "accept, difficulty moderate"
+  for aidj#286 with the caveat that it's a 2-star solo repo.
+- Difficulties: my unit-1 scope check rejected every issue with an open design edge (4 of 8
+  rejections), `repo-in-use` failed live repos that stopped tagging releases, and the scout took the
+  issue's "no history exists" at face value.
+- What changed: I replaced `scope-fits-newcomer` with `scope-feasible` plus a difficulty note
+  (unit 6 patch), added `accepts-outside-prs`, let `repo-in-use` fall back to recent pushes, and
+  I'd add a check that the asked-for behavior isn't already in the code.
 
 ---
 
@@ -140,31 +162,61 @@ and add the link the moment your claim lands.]
 
 **Environment Setup**
 
-[What a stranger would need to stand this up: your operating system,
-the relevant versions (language, runtime, package manager, the project
-itself), and how you set the project up. Then the challenges you faced
-and how you solved them, or that none came up.]
+macOS (Darwin 25.6), Node v22.18.0, git and gh. I forked lolimmlost/aidj to Robalexg/aidj, cloned
+the fork, added `upstream`, and pinned the repro to upstream `main` at `b81906e` (2026-11-06).
+Challenges: the full app needs PostgreSQL and a Navidrome server, and this machine has no Docker,
+so I reproduced against the source at that commit with commands anyone can rerun without
+installing anything. Cloning on macOS also flags `docs/BACKLOG.md` and `docs/backlog.md` as a
+case collision, which shows up as a modified file I leave out of every commit.
 
 **Steps to Reproduce**
 
-1. [Step 1]
-2. [Step 2]
-3. [Observed result]
+1. `git clone https://github.com/lolimmlost/aidj.git && cd aidj && git checkout b81906e`
+2. Baseline: `grep -n "RECENT_KEY\|MAX_RECENT" src/routes/library/search.tsx` shows history
+   already exists (key `aidj.search.recent`, cap 10), from #98.
+3. `grep -n "saveRecent(" src/routes/library/search.tsx`: only line 84, the typed query, adds
+   entries.
+4. `sed -n 184,190p src/routes/library/search.tsx`: `handleSongClick` plays the song and never
+   saves it. Clicked results are not saved.
+5. `grep -c "useSession\|session" src/routes/library/search.tsx` prints `0`: the key is one fixed
+   string, so history is not per user.
+6. `gh issue view 271` and `284`: both OPEN, so Private Session and the command palette don't
+   exist yet.
 
 **Reproduction Evidence**
 
-- **Commit showing reproduction:** [link to commit in your fork]
-- **Screenshots/logs:** [if applicable]
-- **My findings:** [what you discovered during reproduction; an
-  honest, evidenced cannot-reproduce that led you to re-pick or ask
-  the maintainer belongs here and costs you nothing]
+- **Commit showing reproduction:** none
+- **Screenshots/logs:** command output at `b81906e`:
+
+  ```
+  $ sed -n 184,190p src/routes/library/search.tsx
+    const handleSongClick = (songId: string) => {
+      const song = songs.find(s => s.id === songId);
+      if (!song) return;
+      setAIUserActionInProgress(true);
+      playSong(songId, [song]);
+      setTimeout(() => setAIUserActionInProgress(false), 1000);
+    };
+  $ grep -c "useSession\|session" src/routes/library/search.tsx
+  0
+  ```
+- **My findings:** the issue is partly out of date. Query history, per-item remove and Clear all
+  already exist. What's really missing and buildable now is saving clicked results and keying
+  history per user. The Private Session and command palette parts wait on #271 and #284. I asked
+  the owner in my claim whether to scope it that way. The per-user gap is inferred from the code;
+  I haven't tested it with two real accounts.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: repro-check, grading my claim and repro report together against the issue.
+- What it produced: a reject on the first draft (`behavior-matches-issue` failed because I
+  described the grep and sed results instead of pasting them), then an accept after I pasted the
+  raw output, linked #98, and marked the per-user gap as inferred from code.
+- Difficulties: I couldn't run the app (no Docker for PostgreSQL and Navidrome), and installing
+  the repo's dependencies was blocked, so the repro is source-level only. `control-run` still fails
+  because a code-reading repro has no "same command without the trigger".
+- What changed: the report now carries real command output pinned to a commit. Next time I'd set
+  up Navidrome first so the repro can show the behavior in the running app.
 
 ---
 
