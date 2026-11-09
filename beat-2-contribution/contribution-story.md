@@ -353,13 +353,23 @@ observable named is not a strategy.]
 [A running log, added to as you work. Date each entry. What you
 built, decisions you made when you made them, wrong turns included.]
 
-**[Date]**
+**2026-11-08**
 
-[Entry]
+Installed the ship-gate and wrote the manifest from aidj's CI file: `npm ci`, `npm run lint`,
+`npm run build`, `npx vitest run`, with Playwright e2e excluded (CONTRIBUTING calls it optional
+locally, and it needs PostgreSQL and Navidrome). The owner hasn't answered my claim's scope question
+yet, so I'm building on the branch and holding the PR.
 
-**[Date]**
+**2026-11-08**
 
-[Entry]
+Branch `feat/286-recent-searches` from upstream `b81906e`, named in aidj's Conventional Commit style.
+Commit 1 adds `src/lib/utils/recent-searches.ts` and its vitest file. I made the helpers take a
+storage object so the tests run against jsdom's localStorage without rendering the page. Commit 2
+wires `search.tsx`: the user comes from `Route.useRouteContext()` (the route's `beforeLoad` already
+requires it), song plays and album opens are recorded, and artist clicks are caught with
+`onClickCapture` on a wrapper so `ArtistsList.tsx` stays untouched. One side effect I accepted:
+the play button inside an artist card also records that artist, since it's still a click on that
+result. I amended commit 1 once to add the attribution line I'd left off.
 
 **Toolkit**
 
